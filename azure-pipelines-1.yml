@@ -1,0 +1,52 @@
+trigger:
+- main
+
+pool: SargonPool
+
+variables:
+  azureSubscription: 'Sargon-Conn'     # make sure this matches the actual service connection name!
+  functionAppName: 'Sargon-Func-App1'
+  functionsProject: 'azure-functions'    # folder that contains host.json + src + package.json
+
+steps:
+
+# 1) Use Node 22
+- task: NodeTool@0
+  inputs:
+    versionSpec: '22.x'
+  displayName: 'Use Node.js 22'
+
+# 2) Install dependencies for the Functions project
+- script: |
+    echo "Installing dependencies in $(functionsProject)"
+    cd $(functionsProject)
+    npm install
+  displayName: 'Install NPM packages (Functions)'
+
+# 3) Zip the entire azure-functions folder
+# (This now works with your structure)
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(functionsProject)'     # DO NOT include /src/functions — we zip the whole project root
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    replaceExistingArchive: true
+  displayName: 'Archive Functions app'
+
+# 4) Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish artifact'
+
+# 5) Deploy to Azure Function App
+- task: AzureFunctionApp@2
+  displayName: 'Deploy to Azure Function App'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appType: 'functionApp'          # or functionAppLinux if your runtime is Linux
+    appName: $(functionAppName)
+    package: '$(Build.ArtifactStagingDirectory)/functions.zip'
