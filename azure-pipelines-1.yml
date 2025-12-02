@@ -1,54 +1,52 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - main
 
 pool: SargonPool
 
 variables:
-  azureSubscription: 'Sargon-Conn'   # ARM service connection in DevOps
-  functionAppName: 'Sargon-Func-App1'                # Function App name from Azure
-  functionsProject: 'azure-functions'                 # folder we created
+  azureSubscription: 'Sargon-Conn'     # make sure this matches the actual service connection name!
+  functionAppName: 'Sargon-Func-App1'
+  functionsProject: 'azure-functions'    # folder that contains host.json + src + package.json
 
 steps:
-  # 1) Use Node (for build steps if needed)
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '22.x'
-    displayName: 'Use Node.js 22'
 
-  # 2) Install dependencies for the Functions project
-  - script: |
-      cd $(functionsProject)
-      npm install
-    displayName: 'Install NPM packages (Functions)'
+# 1) Use Node 22
+- task: NodeTool@0
+  inputs:
+    versionSpec: '22.x'
+  displayName: 'Use Node.js 22'
 
-  # 3) Zip the Functions project
-  - task: ArchiveFiles@2
-    inputs:
-      rootFolderOrFile: '$(functionsProject)'
-      includeRootFolder: false
-      archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
-      replaceExistingArchive: true
-    displayName: 'Archive Functions app'
+# 2) Install dependencies for the Functions project
+- script: |
+    echo "Installing dependencies in $(functionsProject)"
+    cd $(functionsProject)
+    npm install
+  displayName: 'Install NPM packages (Functions)'
 
-  # 4) Publish the zip as an artifact (optional but nice)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'drop'
-      publishLocation: 'Container'
-    displayName: 'Publish artifact'
+# 3) Zip the entire azure-functions folder
+# (This now works with your structure)
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(functionsProject)'     # DO NOT include /src/functions — we zip the whole project root
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    replaceExistingArchive: true
+  displayName: 'Archive Functions app'
 
-  # 5) Deploy to Azure Function App
-  - task: AzureFunctionApp@2
-    displayName: 'Deploy to Azure Function App'
-    inputs:
-      azureSubscription: $(azureSubscription)
-      appType: 'functionApp'          # or functionAppLinux if you created a Linux Functions app
-      appName: $(functionAppName)
-      package: '$(Build.ArtifactStagingDirectory)/functions.zip'
+# 4) Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish artifact'
+
+# 5) Deploy to Azure Function App
+- task: AzureFunctionApp@2
+  displayName: 'Deploy to Azure Function App'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appType: 'functionApp'          # or functionAppLinux if your runtime is Linux
+    appName: $(functionAppName)
+    package: '$(Build.ArtifactStagingDirectory)/functions.zip'
