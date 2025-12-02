@@ -9,7 +9,7 @@ trigger:
 pool: SargonPool
 
 variables:
-  azureSubscription: 'Sargon Gerges'   # ARM service connection in DevOps
+  azureSubscription: 'Sargon-Conn'   # ARM service connection in DevOps
   functionAppName: 'Sargon-Func-App1'                # Function App name from Azure
   functionsProject: 'azure-functions'                 # folder we created
 
