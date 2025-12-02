@@ -1,0 +1,52 @@
+trigger:
+- main
+
+pool: SargonPool
+
+variables:
+  azureSubscription: 'Sargon-Conn'
+  functionAppName: 'Sargon-Func-App1'
+  functionsProject: 'azure-functions'
+
+steps:
+
+# 1) Select Node version for building Functions
+- task: NodeTool@0
+  inputs:
+    versionSpec: '22.x'
+  displayName: 'Use Node.js 22'
+
+# 2) Install dependencies inside azure-functions/
+- script: |
+    echo "Installing dependencies..."
+    cd $(functionsProject)
+    npm install
+  displayName: 'Install npm packages for Functions'
+
+# 3) Zip the ENTIRE azure-functions folder
+#    (This includes TimerLog.js inside src/functions)
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(functionsProject)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    replaceExistingArchive: true
+  displayName: 'Create deployment ZIP'
+
+# 4) Publish the zip artifact (optional but useful)
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish build artifact'
+
+# 5) Deploy the ZIP to Azure Function App
+- task: AzureFunctionApp@2
+  displayName: 'Deploy Functions to Azure'
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appType: 'functionApp'
+    appName: $(functionAppName)
+    package: '$(Build.ArtifactStagingDirectory)/functions.zip'
