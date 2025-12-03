@@ -1,15 +1,15 @@
 trigger:
   branches:
     include:
-    - main
+      - main
 
 variables:
-- name: azureSubscription
-  value: 'Sargon-Conn'
-- name: functionAppName
-  value: 'Func-App1'
-- name: functionsProject
-  value: 'azure-functions'
+  - name: azureSubscription
+    value: 'Sargon-Conn'
+  - name: functionAppName
+    value: 'Func-App1'
+  - name: functionsProject
+    value: 'azure-functions'
 
 stages:
 - stage: __default
@@ -20,23 +20,16 @@ stages:
 
     steps:
     - task: NodeTool@0
+      displayName: 'Use Node.js 22'
       inputs:
         versionSpec: '22.x'
-      displayName: 'Use Node.js 22'
 
-    - task: CmdLine@2
-      displayName: 'Install NPM packages (Functions)'
-      inputs:
-        script: |
-          echo "Installing dependencies in $(functionsProject)"
-          cd $(functionsProject)
-          npm install
-
+    # No npm install – keeps the package very small
     - task: ArchiveFiles@2
       displayName: 'Archive Functions app'
       inputs:
         rootFolderOrFile: '$(functionsProject)'
-        includeRootFolder: false
+        includeRootFolder: false          # host.json at zip root
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
         replaceExistingArchive: true
@@ -52,8 +45,8 @@ stages:
       displayName: 'Deploy to Azure Function App'
       inputs:
         azureSubscription: $(azureSubscription)
-        appType: 'functionApp'
+        appType: 'functionApp'            # use 'functionAppLinux' if Func-App1 is Linux
         appName: $(functionAppName)
-        runtimeStack: 'NODE|22'                   # matches your runtime
+        runtimeStack: 'NODE|22'
         package: '$(Build.ArtifactStagingDirectory)/functions.zip'
         deploymentMethod: 'zipDeploy'
