@@ -47,6 +47,8 @@ steps:
   displayName: 'Deploy Functions to Azure'
   inputs:
     azureSubscription: $(azureSubscription)
-    appType: 'functionApp'
+    appType: 'functionAppLinux'
     appName: $(functionAppName)
+    runtimeStack: 'NODE|22'
     package: '$(Build.ArtifactStagingDirectory)/functions.zip'
+    deploymentMethod: 'zipDeploy'
