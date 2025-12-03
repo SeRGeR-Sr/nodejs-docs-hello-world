@@ -7,7 +7,7 @@ variables:
 - name: azureSubscription
   value: 'Sargon-Conn'
 - name: functionAppName
-  value: 'Sargon-Func-App1'
+  value: 'Func-App1'
 - name: functionsProject
   value: 'azure-functions'
 
@@ -52,7 +52,7 @@ stages:
       displayName: 'Deploy to Azure Function App'
       inputs:
         azureSubscription: $(azureSubscription)
-        appType: 'functionAppLinux'               # 👈 Linux here
+        appType: 'functionApp'
         appName: $(functionAppName)
         runtimeStack: 'NODE|22'                   # matches your runtime
         package: '$(Build.ArtifactStagingDirectory)/functions.zip'
