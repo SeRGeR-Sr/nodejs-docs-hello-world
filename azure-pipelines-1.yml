@@ -24,12 +24,21 @@ stages:
       inputs:
         versionSpec: '22.x'
 
-    # No npm install – keeps the package very small
+    - task: CmdLine@2
+      displayName: 'Show structure before zip'
+      inputs:
+        script: |
+          echo BUILD.SourcesDirectory = $(Build.SourcesDirectory)
+          echo "=== Contents of azure-functions ==="
+          dir $(Build.SourcesDirectory)\azure-functions
+          echo "=== Contents of src/functions ==="
+          dir $(Build.SourcesDirectory)\azure-functions\src\functions
+
     - task: ArchiveFiles@2
       displayName: 'Archive Functions app'
       inputs:
-        rootFolderOrFile: '$(functionsProject)'
-        includeRootFolder: false          # host.json at zip root
+        rootFolderOrFile: '$(Build.SourcesDirectory)/azure-functions'
+        includeRootFolder: false
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
         replaceExistingArchive: true
@@ -45,7 +54,7 @@ stages:
       displayName: 'Deploy to Azure Function App'
       inputs:
         azureSubscription: $(azureSubscription)
-        appType: 'functionApp'            # use 'functionAppLinux' if Func-App1 is Linux
+        appType: 'functionApp'
         appName: $(functionAppName)
         runtimeStack: 'NODE|22'
         package: '$(Build.ArtifactStagingDirectory)/functions.zip'
