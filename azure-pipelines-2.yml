@@ -16,13 +16,6 @@ steps:
     versionSpec: '22.x'
   displayName: 'Use Node.js 22'
 
-# 2) Install dependencies inside azure-functions/
-- script: |
-    echo "Installing dependencies..."
-    cd $(functionsProject)
-    npm install
-  displayName: 'Install npm packages for Functions'
-
 # 3) Zip the ENTIRE azure-functions folder
 #    (This includes TimerLog.js inside src/functions)
 - task: ArchiveFiles@2
