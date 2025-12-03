@@ -1,14 +1,9 @@
-const { app } = require("@azure/functions");
+module.exports = async function (context, myTimer) {
+  const timestamp = new Date().toISOString();
 
-app.timer("TimeLog", {
-    schedule: "0 */5 * * * *",   // every 5 minutes
-    handler: async (timer, context) => {
-        const timestamp = new Date().toISOString();
+  if (myTimer.isPastDue) {
+    context.log("TimerLog: function is running late!");
+  }
 
-        if (timer.isPastDue) {
-            context.log("Timer function is running late!");
-        }
-
-        context.log(`TimeLog executed at ${timestamp}`);
-    }
-});
+  context.log(`TimerLog: function ran at ${timestamp}`);
+};
