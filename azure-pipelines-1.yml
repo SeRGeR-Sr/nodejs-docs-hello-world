@@ -24,20 +24,18 @@ stages:
       inputs:
         versionSpec: '22.x'
 
+    # (optional) simple one-line check that won't fail the job
     - task: CmdLine@2
-      displayName: 'Show structure before zip'
+      displayName: 'Show azure-functions structure'
       inputs:
         script: |
-          echo BUILD.SourcesDirectory = $(Build.SourcesDirectory)
           echo "=== Contents of azure-functions ==="
           dir $(Build.SourcesDirectory)\azure-functions
-          echo "=== Contents of src/functions ==="
-          dir $(Build.SourcesDirectory)\azure-functions\src\functions
 
     - task: ArchiveFiles@2
       displayName: 'Archive Functions app'
       inputs:
-        rootFolderOrFile: '$(Build.SourcesDirectory)/azure-functions'
+        rootFolderOrFile: '$(functionsProject)'
         includeRootFolder: false
         archiveType: 'zip'
         archiveFile: '$(Build.ArtifactStagingDirectory)/functions.zip'
