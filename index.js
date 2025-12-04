@@ -51,11 +51,8 @@ app.options('*', cors());
 // SIMPLE LOGIN PAGES (ROOT-LEVEL ROUTES)
 // ***************************************************************************
 
-// GET /  – can stay as a simple text response or redirect to /login
 app.get('/', function (req, res) {
-  // You can keep "Hello World!" OR redirect to the login page:
-  // return res.redirect('/login');
-  return res.send("Hello World!");
+  return res.send("/login");
 });
 
 // Serve the login page
