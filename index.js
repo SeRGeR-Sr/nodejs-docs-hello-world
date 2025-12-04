@@ -52,7 +52,7 @@ app.options('*', cors());
 // ***************************************************************************
 
 app.get('/', function (req, res) {
-  return res.send("/login");
+  return res.send("Hello World!");
 });
 
 // Serve the login page
